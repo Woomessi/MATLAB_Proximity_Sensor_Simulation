@@ -1,10 +1,11 @@
 clear
 clc
 close all
-addpath(genpath(pwd))
+addpath(genpath('C:\projects\MATLAB\robot_sensor'))
+% addpath(genpath(pwd))
 
 %初始化仿真环境
-sampleRate = 10;
+sampleRate = 10;%与传感器更新频率一致
 scenario = robotScenario(UpdateRate=sampleRate, MaxNumFrames=100);%机器人仿真需要较高的帧数
 
 %机器人生成
@@ -13,39 +14,40 @@ my_robot = importrobot('model_sensor_compact.urdf');%无mesh，运行更快
 
 robot = robotPlatform("rst", scenario, RigidBodyTree=my_robot);
 
-%测距对象生成
-chargeStation = robotPlatform("chargeStation", scenario, InitialBasePosition=[0.4 0 0]);%基底距离将同时影响mesh与实际障碍物。但mesh的高度为中心对称式定义，实际检测物体的高度沿z轴正方向定义。
-chargeStation.updateMesh("Cuboid", Size=[0.01 1 2.8], Color=[242/255 201/255 187/255]);%mesh尺寸，中心对称式
-chargingStationProfile = struct("Length", 0.01, "Width", 1, "Height", 1.4, 'OriginOffset', [0 0 0]);%障碍物实际尺寸，Length为中心对称式，Height为单向式
-
+%RRT路径规划
 %机器人关节空间起点与终点定义
 initialConfig = homeConfiguration(robot.RigidBodyTree);
 pickUpConfig = [0.2371 -0.0200 0.0542 -2.2272 0.0013 ...
     2.2072 -0.9670];
-
-%RRT路径规划
 planner = manipulatorRRT(robot.RigidBodyTree,scenario.CollisionMeshes);
 planner.IgnoreSelfCollision = true;
 rng("default")
 path = plan(planner,initialConfig,pickUpConfig);
 path = interpolate(planner,path,25);
 
+%仿真
+%测距对象生成
+chargeStation = robotPlatform("chargeStation", scenario, InitialBasePosition=[0.4 0 0]);%基底距离将同时影响mesh与实际障碍物。但mesh的高度为中心对称式定义，实际检测物体的高度沿z轴正方向定义。
+chargingStationProfile = struct("Length", 0.01, "Width", 0.375, "Height", 1.8, 'OriginOffset', [0 0 0]);%障碍物实际尺寸，Length为中心对称式，Height为单向式
+chargeStation.updateMesh("Cuboid", Size=[0.01 0.375 3.6], Color=[242/255 201/255 187/255]);%mesh尺寸，中心对称式
+
 config = homeConfiguration(my_robot);%关节空间结构体生成
-for idx = 1:size(path,1)
-    for idx2 = 1:size(path,2)
+for idx = 1:size(path,1)%遍历每组关节空间配置
+    for idx2 = 1:size(path,2)%遍历每个关节
         config(idx2).JointPosition = path(idx,idx2);
     end
-    tform = getTransform(my_robot, config, "Joint5_Link", "base_link");%在当前config下，各Joint_Link坐标系到基底坐标系的齐次变换矩阵
+    tform = getTransform(my_robot, config, "Joint5_Link", "base_link");%在当前config下，某Joint_Link坐标系到基底坐标系的齐次变换矩阵
     position = tform(1:3,4)';%Joint_Link坐标系原点在基底坐标系中的坐标
     rpy_zyx = tform2eul(tform);%Joint_Link坐标系姿态相对于基底坐标系的rpy角表示
 
     %超声波传感器模型的建立
+    %基于Automated Driving Toolbox的超声波传感器建立
     ultraSonicSensorModel = ultrasonicDetectionGenerator(MountingLocation=position,...%相对于基底的安装位置
         MountingAngles=rad2deg(rpy_zyx),...%相对于基底的安装角度,zyx角，单位为degree
         DetectionRange=[0.009 0.01 0.5], ...%检测范围
         FieldOfView=[25, 25], ...%视场角
         Profiles=chargingStationProfile);%检测目标
-
+    %转换为Robotics System Toolbox的格式
     ult = robotSensor("UltraSonic"+num2str(idx), robot, ...
         CustomUltrasonicSensor(ultraSonicSensorModel));%传感器的实际高度
 
