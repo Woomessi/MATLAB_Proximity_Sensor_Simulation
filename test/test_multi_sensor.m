@@ -27,8 +27,8 @@ path = interpolate(planner,path,25);
 
 %测距对象生成
 chargeStation = robotPlatform("chargeStation", scenario, InitialBasePosition=[0.4 0 0]);%基底距离将同时影响mesh与实际障碍物。但mesh的高度为中心对称式定义，实际检测物体的高度沿z轴正方向定义。
-chargingStationProfile = struct("Length", 0.01, "Width", 0.375, "Height", 1.8, 'OriginOffset', [0 0 0]);%障碍物实际尺寸，Length为中心对称式，Height为单向式
-chargeStation.updateMesh("Cuboid", Size=[0.01 0.375 3.6], Color=[242/255 201/255 187/255]);%mesh尺寸，中心对称式
+chargingStationProfile = struct("Length", 0.176, "Width", 0.149, "Height", 1.57, 'OriginOffset', [0 0 0]);%障碍物实际尺寸，Length为中心对称式，Height为单向式
+chargeStation.updateMesh("Cuboid", Size=[0.176 0.149 1.57*2], Color=[242/255 201/255 187/255]);%mesh尺寸，中心对称式
 
 config = homeConfiguration(my_robot);%关节空间结构体生成
 % for idx = 1:size(path,1)%遍历每组关节空间配置
@@ -53,8 +53,8 @@ theta2= 225*pi/180;    z2= -0.06;
 u = linspace(theta1,theta2,500);%均分角度
 x = r*cos(u); y = r*sin(u);
 z = (z2-z1)/(theta2-theta1)*u + (z1*theta2-z2*theta1)/(theta2-theta1);
-position_helix_local = [x;y;z;ones(1,500)];
-position_helix = tform*position_helix_local;
+position_helix_local = [x;y;z;ones(1,500)];%当地坐标系下的坐标
+position_helix = tform*position_helix_local;%世界坐标系下的坐标
 % 生成均分点
 spot = interparc(size_sensor,position_helix(1,:),position_helix(2,:),position_helix(3,:),'spline');
 spot = spot';
