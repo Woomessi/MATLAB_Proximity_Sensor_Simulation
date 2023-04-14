@@ -20,7 +20,7 @@ if ~isempty(det)
     % t = text(-1, 0, (i-1)*0.1, displayText, "BackgroundColor",'yellow');
     % t(1).Color = 'black';
     % t(1).FontSize = 5;
-    
+
     % displayText = ['Sensor ',num2str(i),'Distance = ',num2str(distance)];
     displayText = ['Sensor ',num2str(i),': ',num2str(distance),' m'];
     t = text(-1, 0, (i-1)*0.1, displayText, "BackgroundColor",'yellow');

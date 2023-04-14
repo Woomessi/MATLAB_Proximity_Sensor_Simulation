@@ -91,6 +91,7 @@ chargeStation = robotPlatform("chargeStation", scenario, InitialBasePosition=[0.
 chargingStationProfile = struct("Length", 0.176, "Width", 0.149, "Height", 1.57, 'OriginOffset', [0 0 0]);%障碍物实际尺寸，Length为中心对称式，Height为单向式
 chargeStation.updateMesh("Cuboid", Size=[0.176 0.149 1.57*2], Color=[242/255 201/255 187/255]);%mesh尺寸，中心对称式
 
+jointConfig = path(idx_config,:);%目标关节空间位置
 for i = 1:size_sensor
     tform_sensor = tform_sensor_all{1,i};
     % 超声波传感器模型的建立
@@ -105,13 +106,12 @@ for i = 1:size_sensor
     CustomUltrasonicSensor(ultraSonicSensorModel));%传感器的实际高度
 
     setup(scenario);%开始仿真
-    [~, ~, det, ~] = read(ult);%读取超声波传感器数据
-    jointConfig = path(idx_config,:);%目标关节空间位置
     move(robot,"joint",jointConfig)%运动
-   
+    [~, ~, det, ~] = read(ult);%读取超声波传感器数据
+
+    plotSimulation(i, scenario, ax, position_helix, spot, tform_sensor_all, tform_sensor, ultraSonicSensorModel, det, robot);
+    
     advance(scenario);%更新仿真
     updateSensors(scenario);%更新传感器
     ultraSonicSensorModel.release();
-
-    plotSimulation(i, scenario, ax, position_helix, spot, tform_sensor_all, tform_sensor, ultraSonicSensorModel, det, robot);
 end

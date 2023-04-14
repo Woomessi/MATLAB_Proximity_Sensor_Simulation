@@ -1,6 +1,7 @@
 function [spot, tform_sensor_all] = getSpotFrame(size_sensor, position_helix, tform, position, r_cylinder)
 % 生成螺旋线均分点（各传感器坐标系原点）
-spot = interparc(size_sensor,position_helix(1,:),position_helix(2,:),position_helix(3,:),'spline');
+% spot = interparc(size_sensor,position_helix(1,:),position_helix(2,:),position_helix(3,:),'spline');
+spot = getUniformPoints(size_sensor, position_helix(1:3,:)', size(position_helix,2)); %自定义函数
 spot = spot';
 xs = spot(1,:);
 ys = spot(2,:);
