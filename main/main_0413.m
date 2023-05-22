@@ -9,13 +9,13 @@ addpath(genpath('C:\projects\MATLAB\robot_sensor'))
 
 idx_link = 5; %传感器布置在哪个连杆上
 size_spot = 16; %ToF模块数量
-idx_helix = 30; %选择当前传感器布局方案
+idx_helix = 67; %选择当前传感器布局方案
 
 %%%%%%%%%%%%%%%%%%%
 %%% 基本参数设置 %%%
 %%%%%%%%%%%%%%%%%%%
 
-size_sim = 3000; %蒙特卡洛模拟次数
+size_sim = 1; %蒙特卡洛模拟次数
 
 %机器人连杆参数
 h_cylinder = 0.09; %圆柱连杆高度
@@ -89,7 +89,10 @@ alpha = [0;-pi/2;pi/2;pi/2;-pi/2;pi/2;pi/2;0];
 size_theta_object = 25; %目标圆柱坐标角度均分数
 [size_point_target, target] = createObject(0.149, 1.57, size_theta_object); %检测目标点生成
 target_homo = [target;ones(1,size_point_target)]; %检测目标的齐次坐标
-translation = [0.5;0;0]; %检测目标平移向量
+r_obj_offset = 0.27+(0.5-0.27)*rand(size_sim,1);
+theta_obj_offset = 360*rand(size_sim,1);
+translation = [r_obj_offset*cosd(theta_obj_offset);r_obj_offset*sind(theta_obj_offset);0]; %检测目标平移向量
+% translation = [0.5;0;0]; %检测目标平移向量
 tform_target = [eye(3),translation;0 0 0 1]; %平移变换矩阵
 target_homo = tform_target*target_homo;
 target = target_homo(1:3,:); %平移变换后的检测目标
@@ -174,4 +177,5 @@ detective_rate = detection_times/size_sim;
 % show(my_robot,config)
 % plotFoV(h_cone, fov_horizontal, tform_spot_all, size_spot);
 % scatter3(target(1,:),target(2,:),target(3,:),2,"magenta","filled")
+% view(0,90)
 % hold off
