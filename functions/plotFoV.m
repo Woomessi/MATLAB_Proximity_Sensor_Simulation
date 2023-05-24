@@ -13,6 +13,9 @@ hold on
 
 for i = 1:size_spot
     tform_spot_current = tform_spot_all{1,i};
+    if tform_spot_current(:,1) == zeros(4,1)
+        break;
+    end
     surf(X,Y,Z, Parent=hgtransform(Matrix=tform_spot_current*M1), LineStyle='none', FaceAlpha=0.4)
 end
 end
